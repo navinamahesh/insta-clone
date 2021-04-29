@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import './App.css';
 import Post from './Post';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { Input, Modal } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core";
 import { Button } from "@material-ui/core";
@@ -31,12 +31,36 @@ const useStyles = makeStyles((theme) => ({
 function App() {
   const classes = useStyles();
   const [modalStyle] = useState(getModalStyle);
-
   const [posts, setPosts] = useState([]);
   const [open, setOpen] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((authUser) => {
+      if (authUser) {
+        console.log(authUser);
+        setUser(authUser);
+
+        if (authUser.displayName) {
+
+        } else {
+          return authUser.updateProfile({
+            displayName: username,
+          });
+        }
+
+      } else {
+        setUser(null);
+      }
+    })
+    return () => {
+      // perform some cleanup actions 
+      unsubscribe();
+    }
+  }, [user, username]);
 
   useEffect(() => {
     db.collection('posts').onSnapshot(snapshot =>  {
@@ -49,7 +73,11 @@ function App() {
   }, []);
 
   const signUp = (event) => {
+    event.preventDefault();
 
+    auth
+    .createUserWithEmailAndPassword(email, password)
+    .catch((error) => alert(error.message))
   }
 
   const handleClose = () => {
@@ -63,27 +91,36 @@ function App() {
       onClose={() => setOpen(false)}
       >
         <div style={modalStyle} className={classes.paper}>
-          <center>
-          <img
-            className="app_headerImage"
-            src="https://www.instagram.com/static/images/web/mobile_nav_type_logo.png/735145cfe0a4.png"
-            alt=""
-          />
+          <form className="app_signup">
+            <center>
+            <img
+              className="app_headerImage"
+              src="https://www.instagram.com/static/images/web/mobile_nav_type_logo.png/735145cfe0a4.png"
+              alt=""
+            />
+            </center>
 
-          <Input
-            placeholder="email"
-            type="text"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Input 
-            placeholder="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button onClick={signUp}>Sign up</Button>
-          </center>
+            <Input
+              type="text"
+              placeholder="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+
+            <Input
+              placeholder="email"
+              type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Input 
+              placeholder="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button type="submit" onClick={signUp}>Sign up</Button>
+          </form>
         </div>
       </Modal>
 
