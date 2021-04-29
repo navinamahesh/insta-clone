@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import './App.css';
 import Post from './Post';
 import { db } from './firebase';
-import { Modal } from "@material-ui/core";
+import { Input, Modal } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core";
 import { Button } from "@material-ui/core";
 
@@ -34,6 +34,9 @@ function App() {
 
   const [posts, setPosts] = useState([]);
   const [open, setOpen] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     db.collection('posts').onSnapshot(snapshot =>  {
@@ -60,17 +63,33 @@ function App() {
       onClose={() => setOpen(false)}
       >
         <div style={modalStyle} className={classes.paper}>
-          <h2> I am a modal </h2>
+          <center>
+          <img
+            className="app_headerImage"
+            src="https://www.instagram.com/static/images/web/mobile_nav_type_logo.png/735145cfe0a4.png"
+            alt=""
+          />
+
+          <Input
+            placeholder="email"
+            type="text"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Input 
+            placeholder="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Button onClick={signUp}>Sign up</Button>
+          </center>
         </div>
       </Modal>
 
 
       <div className="app_header">
-         <img
-            className="app_headerImage"
-            src="https://www.instagram.com/static/images/web/mobile_nav_type_logo.png/735145cfe0a4.png"
-            alt=""
-          />
+
        </div>
 
        <Button onClick={() => setOpen(true)}>Sign Up</Button>
